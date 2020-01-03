@@ -1,7 +1,9 @@
 
 let routesStore = {};
-let notFoundHandler;
+let notFoundHandler: (route: string, params: string[]) => void;
 const watchers = [];
+
+const lazyLoadedUrls: {[key: string]: Promise<void>} = {};
 
 function updateRoute(hash?: string) {
     const route = (hash || location.hash || "#").substr(1).split("/");
@@ -17,9 +19,24 @@ function updateRoute(hash?: string) {
     }
 }
 
+function lazyLoadLib(url: string, type: "script" | "link", finished: () => void) {
+
+    const tag = document.createElement(type);
+    tag.onload = function() {
+        finished();
+    };
+    if (type === "link") {
+        (tag as HTMLLinkElement).href = url;
+        (tag as HTMLLinkElement).rel = "stylesheet";
+    } else {
+        (tag as HTMLScriptElement).src = url;
+    }
+    document.head.appendChild(tag);
+}
+
 export let JSLRoute = {
     setup(routes: { [route: string]: ((params: string[]) => void) },
-            notFound?: (route: string, params: string[]) => void) {
+        notFound?: (route: string, params: string[]) => void) {
         notFoundHandler = notFound;
         routesStore = routes;
         window.addEventListener("hashchange", () => updateRoute());
@@ -39,6 +56,23 @@ export let JSLRoute = {
 
     onNavigate(fnc: (url: string) => boolean | void) {
         watchers.push(fnc);
+    },
+
+    lazyLoad(url: string, type?: "script" | "link"): Promise<void> {
+
+        if (lazyLoadedUrls.hasOwnProperty(url)) {
+            return lazyLoadedUrls[url];
+        }
+
+        const t = type || (url.endsWith(".css") ? "link" : "script");
+        if (!(window as any).Promise) {
+            // promise not supported by browser
+            throw new Error("Promise is not supported by your browser. This feature is required for JSLRoute.lazyLoad");
+        } else {
+            return lazyLoadedUrls[url] = new Promise(
+                function(resolve, reject) {
+                    lazyLoadLib(url, t, resolve);
+                });
+        }
     }
 };
-

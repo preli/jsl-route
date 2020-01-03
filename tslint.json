@@ -18,6 +18,7 @@
         "prefer-for-of": false,
         "ordered-imports": false,
         "typedef": false,
+        "only-arrow-functions": false,
         "no-console": {
             "severity": "error",
             "options": ["debug", "info", "log", "time", "timeEnd", "trace"]
