@@ -34,6 +34,10 @@ function lazyLoadLib(url: string, type: "script" | "link", finished: () => void)
     document.head.appendChild(tag);
 }
 
+function endsWith(str: string, search: string) {
+    return str.substring(str.length - search.length, str.length) === search;
+}
+
 export let JSLRoute = {
     setup(routes: { [route: string]: ((params: string[]) => void) },
         notFound?: (route: string, params: string[]) => void) {
@@ -64,7 +68,7 @@ export let JSLRoute = {
             return lazyLoadedUrls[url];
         }
 
-        const t = type || (url.endsWith(".css") ? "link" : "script");
+        const t = type || (endsWith(url, ".css") ? "link" : "script");
         if (!(window as any).Promise) {
             // promise not supported by browser
             throw new Error("Promise is not supported by your browser. This feature is required for JSLRoute.lazyLoad");
