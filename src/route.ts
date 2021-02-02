@@ -12,8 +12,9 @@ function updateRoute(hash?: string) {
             return;
         }
     }
-    if (routesStore[route[0]]) {
-        routesStore[route[0]](route.slice(1));
+    const lowerRoute = route[0].toLowerCase();
+    if (routesStore[lowerRoute]) {
+        routesStore[lowerRoute](route.slice(1));
     } else if (notFoundHandler) {
         notFoundHandler(route[0], route.slice(1));
     }
@@ -42,7 +43,12 @@ export let JSLRoute = {
     setup(routes: { [route: string]: ((params: string[]) => void) },
         notFound?: (route: string, params: string[]) => void) {
         notFoundHandler = notFound;
-        routesStore = routes;
+        routesStore = {};
+        for (const r in routes) {
+            if (routes.hasOwnProperty(r)) {
+                routesStore[r.toLowerCase()] = routes[r];
+            }
+        }
         window.addEventListener("hashchange", () => updateRoute());
         updateRoute();
     },
