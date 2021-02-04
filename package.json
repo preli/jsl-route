@@ -1,6 +1,6 @@
 {
   "name": "jsl-route",
-  "version": "1.2.4",
+  "version": "1.3.0",
   "description": "lightweight routing library",
   "main": "lib/index.js",
   "files": ["lib/**/*"],

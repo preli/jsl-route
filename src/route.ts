@@ -7,16 +7,27 @@ const lazyLoadedUrls: {[key: string]: Promise<void>} = {};
 
 function updateRoute(hash?: string) {
     const route = (hash || location.hash || "#").substr(1).split("/");
+    const routeLower = (hash || location.hash || "#").substr(1).toLowerCase().split("/");
     for (let i = 0; i < watchers.length; i++) {
         if (watchers[i](hash) === false) {
             return;
         }
     }
-    const lowerRoute = route[0].toLowerCase();
-    if (routesStore[lowerRoute]) {
-        routesStore[lowerRoute](route.slice(1));
-    } else if (notFoundHandler) {
-        notFoundHandler(route[0], route.slice(1));
+
+    let paramCounter = 0;
+    let matchedRoute;
+    while (!routesStore[matchedRoute = routeLower.slice(0, routeLower.length - paramCounter).join("/")]) {
+        paramCounter++;
+        if (paramCounter >= routeLower.length) {
+            // not found
+            if (notFoundHandler) {
+                notFoundHandler(route[0], route.slice(1));
+            }
+            return;
+        }
+    }
+    if ( routesStore[matchedRoute]) {
+        routesStore[matchedRoute](route.slice(route.length - paramCounter));
     }
 }
 
